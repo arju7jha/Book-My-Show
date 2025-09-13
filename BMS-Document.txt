@@ -16,7 +16,7 @@ SMTP                  TCP           25
 (Used for sending emails between mail servers)
 
 Custom TCP        TCP		3000-10000 
-(Used by various applications, such as Node.js (3000), Grafana (3000), Jenkins (8080), and custom web applications.
+(Used by various applications, such as Node.js (3000), Grafana (3000), Jenkins (8080), and custom web applications).
 
 HTTP                   TCP           80
 Allows unencrypted web traffic. Used by web servers (e.g., Apache, Nginx) to serve websites over HTTP.

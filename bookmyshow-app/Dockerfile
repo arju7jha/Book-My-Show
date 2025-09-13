@@ -1,7 +1,7 @@
 # Use Node.js 18 (or your Jenkins-configured version)
 FROM node:18
 
-# Set working directory
+# Set working directory -----------------
 WORKDIR /app
 
 # Copy package.json and package-lock.json
