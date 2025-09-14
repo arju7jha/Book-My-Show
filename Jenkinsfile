@@ -9,7 +9,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t arjukumar7/bookmyshow-app:latest ./bookmyshow-app'
+                bat 'docker build -t arjukumar7/bookmyshow:local ./bookmyshow'
             }
         }
         stage('Push to DockerHub') {
@@ -17,7 +17,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     bat '''
                     echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                    docker push arjukumar7/bookmyshow-app:latest
+                    docker push arjukumar7/bookmyshow:local
                     '''
                 }
             }
