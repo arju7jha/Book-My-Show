@@ -14,7 +14,7 @@ pipeline {
         }
         stage('Push to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     bat '''
                     echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     docker push arjukumar7/bookmyshow-app:latest
@@ -52,7 +52,7 @@ pipeline {
 
 //     stage('DockerHub Login & Push') {
 //       steps {
-//         withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'arjukumar7', passwordVariable: 'dckr_pat_SYwhwsghJLhj1RXvGvZNxab6l7Als')]) {
+//         withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'arjukumar7', passwordVariable: 'dckr_pat_SYwhwsghJLhj1RXvGvZNxab6l7Als')]) {
 //           sh "echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin"
 //           sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
 //           sh "docker push ${IMAGE_NAME}:latest"
