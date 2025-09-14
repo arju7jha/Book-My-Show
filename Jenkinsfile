@@ -1,10 +1,5 @@
 pipeline {
     agent any
-
-    environment {
-        DOCKER_IMAGE = "arjukumar7/bookmyshow-app"
-    }
-
     stages {
         stage('Checkout') {
             steps {
@@ -14,24 +9,23 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t $DOCKER_IMAGE:latest ./bookmyshow-app'
-                }
+                bat 'docker build -t arjukumar7/bookmyshow-app:latest ./bookmyshow-app'
             }
         }
-
         stage('Push to DockerHub') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        sh 'docker push $DOCKER_IMAGE:latest'
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat '''
+                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                    docker push arjukumar7/bookmyshow-app:latest
+                    '''
                 }
             }
         }
     }
 }
+
+
 
 
 // pipeline {
