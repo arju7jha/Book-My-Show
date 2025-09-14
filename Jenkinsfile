@@ -9,9 +9,10 @@ pipeline {
     stages {
         stage('Git Checkout') {
             steps {
-                git 'https://github.com/arju7jha/Book-My-Show.git'
+                git branch: 'main', url: 'https://github.com/arju7jha/Book-My-Show.git'
             }
         }
+        
         
         stage('SonarQube Analysis') {
             steps {
