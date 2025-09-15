@@ -14,6 +14,6 @@ scrape_configs:
     metrics_path: /prometheus
     basic_auth:
       username: "admin"
-      password: "1153fe8cd4ba10de12ff7d8578be5e0c77"
+      password: "8723fe8zg4ba72de12kf7d8494be5h0c37"
     static_configs:
       - targets: ["44.203.132.118:8080"]
