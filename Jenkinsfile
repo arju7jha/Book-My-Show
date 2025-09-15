@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SONAR_HOST_URL = 'http://52.53.163.10:9000'  // Replace with your SonarQube server IP
-        SONAR_TOKEN = credentials('BMS-token')       // Add your SonarQube token in Jenkins credentials
+        SONAR_TOKEN = credentials('sonar-token')       // Add your SonarQube token in Jenkins credentials
     }
 
     stages {

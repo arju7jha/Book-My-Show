@@ -1,0 +1,146 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'jdk21'
+        maven 'maven3'
+    }
+
+    environment {
+        SCANNER_HOME = tool 'sonar'
+        DOCKER_IMAGE = 'bookmyshow-app'
+        DOCKER_HUB_REPO = 'arjukumar7/bookmyshow-app'
+        IMAGE_TAG = "v${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout from Git') {
+            steps {
+                git branch: 'main', url: https://github.com/arju7jha/Book-My-Show.git
+                sh 'ls -la'
+            }
+        }   
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh '''
+                        $SCANNER_HOME/bin/sonar-scanner \
+                            -Dsonar.projectName=arju-BookMyShow-app \
+                            -Dsonar.projectKey=arju
+                    '''
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    timeout(time: 2, unit: 'MINUTES') {
+                        try {
+                            waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
+                        } catch (Exception e) {
+                            echo "Quality Gate timeout - Check SonarQube dashboard manually"
+                            echo "SonarQube Dashboard: http://localhost:9001/dashboard?id=arju"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('bookmyshow-app') {
+                    sh '''
+                        docker build -t ${DOCKER_IMAGE}:${IMAGE_TAG} .
+                        docker tag ${DOCKER_IMAGE}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
+                        sh '''
+                            echo $DOCKER_TOKEN | docker login -u arjukumar7 --password-stdin
+                            docker push ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                            docker logout
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                    docker stop bookmyshow-app-run || true
+                    docker rm bookmyshow-app-run || true
+                    docker run -d -p 3000:80 --name bookmyshow-app-run ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                '''
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "Pipeline completed. SonarQube analysis results available at: http://localhost:9001/dashboard?id=arju"
+            echo "Docker image pushed: ${DOCKER_HUB_REPO}:${IMAGE_TAG}"
+            echo "Application running at: http://localhost:3000"
+        }
+        success {
+            sh '''
+                docker rmi ${DOCKER_IMAGE}:${IMAGE_TAG} || true
+            '''
+            emailext (
+                subject: "SUCCESS: BookMyShow CI/CD Pipeline Completed",
+                body: """
+                Hi Team,
+               
+                The BookMyShow CI/CD pipeline completed successfully.
+ 
+                Pipeline Details:
+                - SonarQube Analysis: Completed
+                - Docker Image: ${DOCKER_HUB_REPO}:${IMAGE_TAG}
+                - Application URL: http://localhost:3000
+ 
+                You can view the SonarQube report here:
+                http://172.17.0.2:9000/dashboard?id=arju
+ 
+                Regards,
+                Jenkins
+                """,
+                to: 'arjuk217@gmail.com'
+            )
+        }
+        failure {
+            emailext (
+                subject: "FAILED: BookMyShow CI/CD Pipeline",
+                body: """
+                Hi Team,
+               
+                The BookMyShow CI/CD pipeline has failed.
+               
+                Please check the Jenkins console output for details.
+                SonarQube Dashboard: http://172.17.0.2:9000/dashboard?id=arju
+      
+                Regards,
+                Jenkins
+                """,
+                to: 'arjuk217@gmail.com'
+            )
+        }
+    }
+}
+
+
+
+
